@@ -1,16 +1,43 @@
-version: '3'
+version: '3.8'
 services:
+  docker:
+    image: docker:dind
+    restart: always
+    privileged: true
+    container_name: docker
+    environment:
+       - DOCKER_TLS_CERTDIR=/certs
+       - DOCKER_STORAGE_OPTS=--storage-driver overlay2
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - jenkins-docker-certs-client:/certs/client
+      - jenkins-docker-certs-ca:/certs/ca
+    networks:
+      jenkins:
   jenkins:
     image: jenkins/jenkins:lts
     restart: always
     privileged: true
     user: root
+    environment:
+      - DOCKER_HOST=tcp://docker:2376
+      - DOCKER_CERT_PATH=/certs/client
+      - DOCKER_TLS_VERIFY=1
     ports:
-      - 8080:8080
-      - 50000:50000
+      - "8080:8080"
+      - "50000:50000"
     container_name: jenkins
     volumes:
       - jenkins_home:/var/jenkins_home
-      - /var/run/docker.sock:/var/run/docker.sock
+      - jenkins-docker-certs-client:/certs/client
+      - jenkins-docker-certs-ca:/certs/ca
+      - /usr/bin/docker:/usr/bin/docker
+    networks:
+      jenkins:
 volumes:
   jenkins_home:
+  jenkins-docker-certs-client:
+  jenkins-docker-certs-ca:
+networks:
+  jenkins:
+    driver: bridge
