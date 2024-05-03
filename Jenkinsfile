@@ -6,7 +6,7 @@ pipeline {
   }
 
   environment {
-    ARTIFACT_ID = "pin1_grupo7:7.0"
+    ARTIFACT_ID = "bjumbo/pin1_grupo7:${env.BUILD_NUMBER}"
     DOCKER_IMAGE = "testapp"
   }
   stages {
