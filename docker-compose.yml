@@ -1,21 +1,27 @@
-version: '3.8'
+version: "3.8"
 services:
   docker:
     image: docker:dind
     restart: always
     privileged: true
     container_name: docker
+    ports:
+      - "2376:2376"
     environment:
-       - DOCKER_TLS_CERTDIR=/certs
-       - DOCKER_STORAGE_OPTS=--storage-driver overlay2
+      - DOCKER_TLS_CERTDIR=/certs
+      - DOCKER_STORAGE_OPTS=--storage-driver overlay2
     volumes:
       - jenkins_home:/var/jenkins_home
-      - jenkins-docker-certs-client:/certs/client
-      - jenkins-docker-certs-ca:/certs/ca
+      - jenkins-docker-certs:/certs/client
+        #     - jenkins-docker-certs-ca:/certs/ca
     networks:
       jenkins:
+        aliases:
+          - docker
   jenkins:
-    image: jenkins/jenkins:lts
+    #image: jenkins/jenkins:lts
+    build:
+      context: jenkins
     restart: always
     privileged: true
     user: root
@@ -29,15 +35,12 @@ services:
     container_name: jenkins
     volumes:
       - jenkins_home:/var/jenkins_home
-      - jenkins-docker-certs-client:/certs/client
-      - jenkins-docker-certs-ca:/certs/ca
-      - /usr/bin/docker:/usr/bin/docker
+      - jenkins-docker-certs:/certs/client:ro
     networks:
       jenkins:
 volumes:
   jenkins_home:
-  jenkins-docker-certs-client:
-  jenkins-docker-certs-ca:
+  jenkins-docker-certs:
 networks:
   jenkins:
     driver: bridge
